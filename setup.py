@@ -1,11 +1,11 @@
 from setuptools import setup
 
 install_requires = ['beautifulsoup4',
-                    'simplejson',
-                    'slacker',
+                    'slackclient',
                     'jira',
                     'requests',
-                    'websocket-client']
+                    'Flask',
+                    'gunicorn[eventlet]']
 
 setup(name='linkbot',
       install_requires=install_requires,

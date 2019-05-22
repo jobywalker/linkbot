@@ -1,15 +1,13 @@
 import requests
 import re
 import collections
-from logging import getLogger
 from functools import partial
 from six.moves.urllib.parse import urlencode
 from jira import JIRA
-from . import saml
-logger = getLogger(__name__)
+from . import saml, RequestLogger
 
 
-class ServiceNowClient(requests.Session):
+class ServiceNowClient(RequestLogger, requests.Session):
     """ServiceNow REST client for looking up records."""
     api = '/api/now/table'
     table_map = {
@@ -46,7 +44,6 @@ class ServiceNowClient(requests.Session):
             'sysparm_fields': ','.join(fields)
         }
         url += '/{table}?{query}'.format(table=table, query=urlencode(query))
-        logger.debug('GET', url)
         response = self.get(url)
         if response.status_code != 200:
             raise IOError('bad service now response ' + str(response))

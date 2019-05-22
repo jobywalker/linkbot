@@ -7,3 +7,5 @@ README.md
 
 # no local/debug log file
 linkbot.log
+
+.env

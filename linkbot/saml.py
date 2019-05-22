@@ -1,11 +1,12 @@
 """Utilities for working with sites behind UW SSO."""
 import requests
 from bs4 import BeautifulSoup
-from six.moves.urllib.parse import urljoin
+from urllib.parse import urljoin
+from . import RequestLogger
 IDP = 'https://idp.u.washington.edu/'
 
 
-class UwSamlSession(requests.Session):
+class UwSamlSession(RequestLogger, requests.Session):
     """A requests.Session that checks responses for IdP redirects."""
     def __init__(self, credentials=(None, None)):
         self._credentials = credentials

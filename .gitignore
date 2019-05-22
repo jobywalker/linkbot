@@ -103,3 +103,4 @@ ENV/
 #For this project
 iam-linkbot/
 linkconfig.py
+.env
