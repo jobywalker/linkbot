@@ -15,4 +15,5 @@ script:
 
 after_success:
   - test -z "$TRAVIS_PULL_REQUEST_BRANCH" || travis_terminate 0
-  - docker push "${DOCKER_IMAGE}:${TAG}" && docker push "${DOCKER_IMAGE}:${TAG}"
+  - docker push "${DOCKER_IMAGE}:${TAG}"
+  - test -z "$TRAVIS_TAG" || docker push "${DOCKER_IMAGE}"  # push latest

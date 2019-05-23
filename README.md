@@ -35,3 +35,12 @@ a randomly selected quip in the second.
 
 It's a pretty simple little script.  Pull requests are welcome!
 
+
+## Setting up the app in Slack
+
+* Create a new app at https://api.slack.com/apps
+* Add the app to your workspace
+* Grab the Signing Secret (under general) and the Bot User OAuth Access Token (under OAuth) and add them to your secrets. These are the only slack secrets your app requires.
+* Enable events, using as your Request URL the url of your newly-running app.
+  * Subscribe to all bot events starting with `message.` (`message.im`, `message.groups`, `message.channels`,   `message.mpim`) and save your changes.
+* (Optional) Add a slack command, using the same URL that you used earlier. This allows people to use it in DMs and channels where linkbot isn't a member. It'll ask to reinstall the app. Do it.
