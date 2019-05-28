@@ -34,23 +34,14 @@ def handle_message():
 
     verify_slack_signature()
     if not request.is_json:
-        # treat it as a command
-        response_url = request.form['response_url']
-        text = request.form['text']
-        MessageProcessor.queue.put(partial(process_command, text, response_url))
+        MessageProcessor.queue.put(partial(process_command, request.form))
         return jsonify(response_type='in_channel')
     json = request.get_json()
     if 'challenge' in json:
         # This is how Slack verifies our URL to receive events.
         return jsonify(challenge=json['challenge'])
     event = json['event']
-    if event['type'] != 'message':
-        app.logger.error(f'discarding unhandled event type {event["type"]}')
-    if 'bot_id' in event or event.get('subtype') == 'bot_message':
-        return '', 200
-
-    text, channel = event['text'], event['channel']
-    MessageProcessor.queue.put(partial(process_event, text, channel))
+    MessageProcessor.queue.put(partial(process_event, event))
     return '', 200
 
 
@@ -87,14 +78,41 @@ class MessageProcessor(Thread):
             self.queue.task_done()
 
 
-def process_event(text, channel):
+def process_event(event):
     """Process events by posting matches to the provided channel."""
+    event_type = event.get('type')
+    subtype = event.get('subtype')
+    hidden = event.get('hidden')
+    if event_type != 'message':
+        app.logger.error(f'discarding unhandled event type {event_type}')
+        return
+    if 'bot_id' in event or subtype == 'bot_message':
+        return
+
+    event_keys = ','.join(event)
+    description = f'subtype={subtype};hidden={hidden}, {event_keys}'
+    if hidden or 'text' not in event or 'channel' not in event:
+        app.logger.info(f'Event discarded: {description}')
+        return
+    text = event['text']
+    post_args = {'channel': event['channel']}
+    if 'thread_ts' in event:
+        post_args['thread_ts'] = event['thread_ts']
+
+    app.logger.debug(f'processing message from event: {description}')
     for message in links_from_text(text):
-        SLACK_CLIENT.chat_postMessage(text=message, channel=channel)
+        SLACK_CLIENT.chat_postMessage(text=message, **post_args)
 
 
-def process_command(text, response_url):
+def process_command(command):
     """Process a slack command by posting a response to the provided url."""
+    response_url = command.get('response_url')
+    text = command.get('text')
+    if not all([text, response_url]):
+        command_keys = ','.join(command)
+        app.logger.error(f'tossing supposed command: {command_keys}')
+        return
+
     text = '\n'.join(links_from_text(text))
     if text:
         data = dict(text=text, response_type='in_channel')
