@@ -2,7 +2,7 @@ import requests
 import re
 import collections
 from functools import partial
-from six.moves.urllib.parse import urlencode
+from urllib.parse import urlencode
 from jira import JIRA
 from . import saml, RequestLogger
 
@@ -54,10 +54,13 @@ class ServiceNowClient(RequestLogger, requests.Session):
 
     def link(self, number):
         """Return a link to a record given its number."""
-        fargs = {'host': self.host, 'table': self._table_from_number(number),
-                 'number': number}
-        return ('{host}/{table}.do?sysparm_table={table}'
-                '&sysparm_query=number%3D{number}').format(**fargs)
+        table = self._table_from_number(number)
+        # You're reading this right, it's triple-nested encoding
+        sysparm_query = urlencode({'number': number})
+        record_query = urlencode({'sysparm_table': table,
+                                  'sysparm_query': sysparm_query})
+        nav_query = urlencode({'uri': f'{table}.do?{record_query}'})
+        return f'{self.host}/nav_to.do?{nav_query}'
 
     def _table_from_number(self, number):
         """Given a number, parse out the record type and return the matching
