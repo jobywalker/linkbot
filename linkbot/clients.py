@@ -79,6 +79,7 @@ class ServiceNowRecord:
         'number': 'Number',
         'parent': 'Parent',
         'state': 'State',
+        'priority': 'Priority',
         'assigned_to': 'Assigned To',
         'opened_by': 'Opened By',
         'sys_updated_on': 'Last Update'}
