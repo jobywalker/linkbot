@@ -17,13 +17,33 @@ from linkbot import bots, RequestLogger
 app = Flask(__name__)
 app.config.from_pyfile(os.environ['APP_CONFIG'])
 SLACK_SECRET = app.config['SLACK_SIGNING_SECRET']
-LINKBOTS = []
-for bot in app.config['LINKBOTS']:
-    LINKBOTS.append(getattr(bots, bot.get('LINK_CLASS', 'LinkBot'))(bot))
-if not LINKBOTS:
-    raise Exception('no linkbots defined')
 SLACK_CLIENT = slack.WebClient(app.config['SLACK_BOT_TOKEN'])
 WEBHOOK_CLIENT = RequestLogger()
+
+
+class Linkbots:
+    """Container of Linbot instances."""
+    bot_configs = app.config['LINKBOTS']
+    bots = []
+
+    def __init__(self):
+        if not self.bots:
+            for config in self.bot_configs:
+                class_name = config.get('LINK_CLASS', 'LinkBot')
+                bot_class = getattr(bots, class_name)
+                try:
+                    self.bots.append(bot_class(config))
+                except Exception as e:
+                    # report and swallow the error
+                    app.logger.error(f'Error instantiating {class_name}: {e}')
+
+
+    def __iter__(self):
+        botlen, configlen = len(self.bots), len(self.bot_configs)
+        if botlen != configlen:
+            message = f'bot instances ({botlen}) != configs ({configlen})'
+            app.logger.error(message)
+        return iter(self.bots)
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -121,7 +141,7 @@ def process_command(command):
 
 def links_from_text(text):
     """Search for matches and post any to the original channel."""
-    for bot in LINKBOTS:
+    for bot in Linkbots():
         for match in bot.match(text):
             app.logger.info(f'{match} match!')
             try:

@@ -114,7 +114,9 @@ class UwSamlJira(JIRA):
     def __init__(self, host='', auth=(None, None)):
         """Initialize with the basic auth so we use our _session."""
         self._session = saml.UwSamlSession(credentials=auth)
-        super(UwSamlJira, self).__init__(host, basic_auth=('ignored', 'haha'))
+        options = {'rest_api_version ': 'latest', 'timeout': 10}
+        super(UwSamlJira, self).__init__(host, basic_auth=('ignored', 'haha'),
+                                         options=options)
 
     def _create_http_basic_session(self, *basic_auth, timeout=None):
         """Hide the JIRA implementation so it uses our instance of_session."""
