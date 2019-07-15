@@ -1,13 +1,11 @@
 """Flask app that listens on / and processes slack events and commands."""
-import logconfig
+import logconfig  # noqa F401
 from flask import Flask, request, jsonify, abort
 import slack
 import os
 import time
 import hmac
 import hashlib
-import json.decoder
-import requests
 from functools import partial
 from threading import Thread
 from queue import Queue
@@ -58,7 +56,8 @@ def verify_slack_signature():
         app.logger.error('Stale command request.')
         abort(403)
     compstr = f'v0:{timestamp}:'.encode() + request.get_data()
-    rhash = hmac.new(SLACK_SECRET.encode(), compstr, hashlib.sha256).hexdigest()
+    rhash = hmac.new(SLACK_SECRET.encode(), compstr, hashlib.sha256)
+    rhash = rhash.hexdigest()
     if not hmac.compare_digest(f'v0={rhash}', signature):
         app.logger.error('Invalid X-Slack-Signature')
         abort(403)
@@ -126,6 +125,8 @@ def links_from_text(text):
             app.logger.info(f'{match} match!')
             try:
                 yield bot.message(match)
+            except KeyError as e:
+                app.logger.info(f'not found on {match}: {e}')
             except Exception as e:
                 app.logger.error(e)
                 continue

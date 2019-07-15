@@ -14,12 +14,10 @@ if os.environ.get('SERVICE_NOW_PASSWORD'):
         'QUIPS': []
     })
 
-# disable jira for now 
-if False and os.environ.get('UW_SAML_PASSWORD'):
+if os.environ.get('UW_SAML_PASSWORD'):
     LINKBOTS.append({
         'LINK_CLASS': 'JiraLinkBot',
         'HOST': get('JIRA_HOST'),
         'AUTH': (get('UW_SAML_USER'), get('UW_SAML_PASSWORD')),
         'QUIPS': []
     })
-

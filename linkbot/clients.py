@@ -2,9 +2,9 @@ import requests
 import re
 import collections
 from functools import partial
-from urllib.parse import urlencode
-from jira import JIRA
+from urllib.parse import urlencode, quote
 from . import saml, RequestLogger
+from types import SimpleNamespace
 
 
 class ServiceNowClient(RequestLogger, requests.Session):
@@ -109,12 +109,28 @@ class ServiceNowRecord:
             yield field, value
 
 
-class UwSamlJira(JIRA):
+class UwSamlJira:
     """A Jira client with a saml session to handle authn on an SSO redirect"""
     def __init__(self, host='', auth=(None, None)):
         """Initialize with the basic auth so we use our _session."""
         self._session = saml.UwSamlSession(credentials=auth)
-        super(UwSamlJira, self).__init__(host, basic_auth=('ignored', 'haha'))
+        self.host = host
 
-    def _create_http_basic_session(self, *basic_auth, timeout=None):
-        """Hide the JIRA implementation so it uses our instance of_session."""
+    def issue(self, issue_number):
+        """
+        Return a JIRA issue. Try to adhere to the same model as the
+        jira package.
+        """
+        url = f'{self.host}/rest/api/latest/issue/{quote(issue_number)}'
+        response = self._session.get(url)
+        if response.status_code == 404:
+            raise KeyError(f'{issue_number} not found')
+        response.raise_for_status()
+        data = response.json()
+        fields = SimpleNamespace(**data['fields'])
+        subobjects = ['status', 'reporter', 'assignee']
+        for subobject in subobjects:
+            objdict = getattr(fields, subobject, None)
+            if objdict:
+                setattr(fields, subobject, SimpleNamespace(**objdict))
+        return SimpleNamespace(fields=fields)
