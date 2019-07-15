@@ -124,7 +124,7 @@ class UwSamlJira:
         url = f'{self.host}/rest/api/latest/issue/{quote(issue_number)}'
         response = self._session.get(url)
         if response.status_code == 404:
-            return None
+            raise KeyError(f'{issue_number} not found')
         response.raise_for_status()
         data = response.json()
         fields = SimpleNamespace(**data['fields'])

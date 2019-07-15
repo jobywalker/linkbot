@@ -125,6 +125,8 @@ def links_from_text(text):
             app.logger.info(f'{match} match!')
             try:
                 yield bot.message(match)
+            except KeyError as e:
+                app.logger.info(f'not found on {match}: {e}')
             except Exception as e:
                 app.logger.error(e)
                 continue
