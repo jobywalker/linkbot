@@ -79,7 +79,7 @@ class JiraLinkBot(LinkBot):
         msg = super(JiraLinkBot, self).message(link_label)
         issue = self.jira.issue(link_label)
         summary = issue.fields.summary
-        get_name = lambda person: person and person.displayName or 'None'
+        def get_name(person): return person and person.displayName or 'None'
         reporter = '*Reporter* ' + get_name(issue.fields.reporter)
         assignee = '*Assignee* ' + get_name(issue.fields.assignee)
         status = '*Status* ' + issue.fields.status.name

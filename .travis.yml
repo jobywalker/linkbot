@@ -9,6 +9,7 @@ install:
 
 script:
   - docker build -t "${DOCKER_IMAGE}" .
+  - docker run -it "${DOCKER_IMAGE}" python setup.py test
   - export BRANCH_TAG=$TRAVIS_BRANCH-$(date '+%s')
   - export TAG=${TRAVIS_TAG:-$BRANCH_TAG}
   - docker tag "${DOCKER_IMAGE}" "${DOCKER_IMAGE}:${TAG}"

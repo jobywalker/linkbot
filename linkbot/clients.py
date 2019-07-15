@@ -132,5 +132,5 @@ class UwSamlJira:
         for subobject in subobjects:
             objdict = getattr(fields, subobject, None)
             if objdict:
-                seatattr(fields, subobject, SimpleNamespace(**objdict))
+                setattr(fields, subobject, SimpleNamespace(**objdict))
         return SimpleNamespace(fields=fields)

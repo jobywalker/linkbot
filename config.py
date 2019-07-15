@@ -21,4 +21,3 @@ if os.environ.get('UW_SAML_PASSWORD'):
         'AUTH': (get('UW_SAML_USER'), get('UW_SAML_PASSWORD')),
         'QUIPS': []
     })
-
