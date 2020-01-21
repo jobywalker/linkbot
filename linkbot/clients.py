@@ -18,7 +18,11 @@ class ServiceNowClient(RequestLogger, requests.Session):
         'PRB': 'problem',
         'PTASK': 'problem_task',
         'REQ': 'u_simple_requests',
-        'RTASK': 'u_request_task'
+        'RTASK': 'u_request_task',
+        'PRJ': 'pm_project',
+        'DMND': 'dmn_demand',
+        'IDEA': 'idea',
+        'ADVISORY': 'u_outage_communication'
     }
     _digits_regex = re.compile('[0-9]')
 
